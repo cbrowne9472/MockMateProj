@@ -32,15 +32,19 @@ Follow these steps to run MockMate locally:
 
 ### 1. Clone the Repository
 git clone https://github.com/yourusername/mockmate.git
+
 cd mockmate
 
 ### 2. Set up the front end
 cd mockMate-front-main
+
 npm install
+
 npm run dev
 
 ### 3. Set up back end
 cd mockMate-main
+
 mvm spring-boot:run
 
 ### 4. Open the app
