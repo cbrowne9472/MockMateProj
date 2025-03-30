@@ -45,7 +45,7 @@ npm run dev
 ### 3. Set up back end
 cd mockMate-main
 
-mvm spring-boot:run
+mvn spring-boot:run
 
 ### 4. Open the app
 Go to http://localhost:3000 in your browser to view the app.
