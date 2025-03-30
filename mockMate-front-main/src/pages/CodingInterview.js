@@ -20,6 +20,25 @@ function CodingInterview({ userId }) {
     const messagesEndRef = useRef(null);               // Reference for auto-scrolling
 
     /**
+     * Resets the conversation history with the chatbot
+     */
+    const resetConversation = async () => {
+        try {
+            setIsLoading(true);
+            // Call the backend reset endpoint
+            await axios.post("/interview/coding-interview/reset", {
+                userId
+            });
+            // Clear the local chat history
+            setChat([]);
+            setIsLoading(false);
+        } catch (error) {
+            console.error("Error resetting conversation:", error);
+            setIsLoading(false);
+        }
+    };
+
+    /**
      * Auto-scrolls the chat to the latest message
      */
     const scrollToBottom = () => {
@@ -147,6 +166,15 @@ function CodingInterview({ userId }) {
     return (
         <div className="chat-container">
             <h2>Coding Interview Practice</h2>
+            <div className="chat-header">
+                <button
+                    className="button secondary"
+                    onClick={resetConversation}
+                    disabled={isLoading || chat.length === 0}
+                >
+                    Reset Conversation
+                </button>
+            </div>
             {/* Chat messages display area */}
             <div className="chat-messages">
                 {chat.map((msg, i) => (
