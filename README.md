@@ -52,7 +52,7 @@ Go to http://localhost:3000 in your browser to view the app.
 
 
 
-🙌 Team & Credits
+## 🙌 Team & Credits
 This project was created during [Hackathon Name] by:
 
 Christopher Browne
