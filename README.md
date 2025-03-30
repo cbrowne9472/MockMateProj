@@ -1,72 +1,65 @@
 # MockMate
 
-# Getting Started with Create React App
+MockMate is a web platform designed to help interviewees practice and improve their technical skills through realistic mock interviews. Built during a hackathon, this project empowers users to simulate coding interviews, receive feedback from peers, and track their progress over time.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 💡 What is MockMate?
 
-## Available Scripts
+MockMate is an all-in-one tool for technical interview preparation. Whether you're a beginner looking to break into tech or an experienced developer sharpening your skills, MockMate offers:
 
-In the project directory, you can run:
+- 💻 **Mock coding challenges** in a realistic interview format  
+- 📝 **Feedback system** to receive peer reviews and suggestions  
+- 📈 **Progress tracking** to monitor improvement over time  
+- 📚 **Resources and tips** to boost interview readiness  
 
-### `npm start`
+## 🔧 Technologies Used
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **React** – Frontend framework for dynamic UI
+- **Java** – Backend logic and server-side functionality
+- **HTML & CSS** – Structure and styling of web pages
+- **JavaScript** – Interactive features and frontend logic
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🚀 Features
 
-### `npm test`
+- 👥 Create or join mock interviews
+- 🧠 Solve technical challenges in real time
+- 🔍 Review and provide feedback to others
+- 📊 Track your progress and get personalized insights
+- 📘 Access curated guides and interview prep resources
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🛠️ Getting Started
 
-### `npm run build`
+Follow these steps to run MockMate locally:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 1. Clone the Repository
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+git clone https://github.com/yourusername/mockmate.git
+cd mockmate
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 2. Set up the front end
+cd mockMate-front-main
+npm install
+npm run dev
 
-### `npm run eject`
+### 3. Set up back end
+cd mockMate-main
+mvm spring-boot:run
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 4. Open the app
+Go to http://localhost:3000 in your browser to view the app.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+🙌 Team & Credits
+This project was created during [Hackathon Name] by:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Christopher Browne
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Fawaz Hussein Agha
 
-## Learn More
+Tram Nguyen
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Clara Kwon
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Huge thanks to the mentors and organizers who supported us!
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+📄 License
+This project is for educational and demonstration purposes only. Feel free to fork and build upon it!
