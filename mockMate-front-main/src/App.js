@@ -4,6 +4,7 @@ import CodingInterview from "./pages/CodingInterview";
 import PhoneInterview from "./pages/PhoneInterview";
 import InterviewSelection from "./pages/InterviewSelection";
 import "./styles/global.css";
+import axios from "axios";
 
 /**
  * AppWrapper Component
@@ -65,10 +66,21 @@ function App() {
     }, [interviewType]);
 
     // Handle interview type selection
-    const handleInterviewSelect = (type) => {
-        // Push a new entry to browser history when selecting an interview type
-        window.history.pushState({ page: type }, '', `/${type}`);
-        setInterviewType(type);
+    const handleInterviewSelect = async (type) => {
+        try {
+            // Reset the previous interview state if switching types
+            if (interviewType && interviewType !== type) {
+                await axios.post(`/interview/${interviewType}-interview/reset`, {
+                    userId: user.sub
+                });
+            }
+            
+            // Push a new entry to browser history when selecting an interview type
+            window.history.pushState({ page: type }, '', `/${type}`);
+            setInterviewType(type);
+        } catch (error) {
+            console.error("Error resetting interview state:", error);
+        }
     };
 
     // Show loading spinner while checking authentication state

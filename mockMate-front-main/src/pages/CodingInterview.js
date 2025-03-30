@@ -17,6 +17,8 @@ function CodingInterview({ userId }) {
     const [language, setLanguage] = useState("javascript");
     const [output, setOutput] = useState("");
     const [isRunning, setIsRunning] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const [mediaRecorder, setMediaRecorder] = useState(null);
     
     // Array of coding problems
     const codingProblems = [
@@ -282,8 +284,36 @@ console.log(isValid("(]")); // Should output false`,
     /**
      * Navigate to a specific problem by index
      */
-    const navigateToProblem = (index) => {
-        setCurrentProblemIndex(index);
+    const navigateToProblem = async (index) => {
+        try {
+            // Reset the backend state first
+            await axios.post("/interview/coding-interview/reset", {
+                userId
+            });
+            
+            setCurrentProblemIndex(index);
+            setChat([]);  // Clear chat history
+            
+            // Initialize the new problem context with complete problem information
+            const response = await axios.post("/interview/coding-interview", {
+                userId,
+                text: "START_PROBLEM",
+                problem: {
+                    title: codingProblems[index].title,
+                    description: codingProblems[index].description,
+                    startingCode: codingProblems[index].startingCode,
+                    tests: codingProblems[index].tests
+                }
+            });
+            
+            setChat([{ sender: "Interviewer", text: response.data }]);
+        } catch (error) {
+            console.error("Error switching problems:", error);
+            setChat([{ 
+                sender: "System", 
+                text: "Sorry, there was an error switching problems. Please try again." 
+            }]);
+        }
     };
     
     /**
@@ -291,7 +321,7 @@ console.log(isValid("(]")); // Should output false`,
      */
     const nextProblem = () => {
         const nextIndex = (currentProblemIndex + 1) % codingProblems.length;
-        setCurrentProblemIndex(nextIndex);
+        navigateToProblem(nextIndex);
     };
     
     /**
@@ -299,7 +329,7 @@ console.log(isValid("(]")); // Should output false`,
      */
     const prevProblem = () => {
         const prevIndex = (currentProblemIndex - 1 + codingProblems.length) % codingProblems.length;
-        setCurrentProblemIndex(prevIndex);
+        navigateToProblem(prevIndex);
     };
     
     /**
@@ -310,11 +340,17 @@ console.log(isValid("(]")); // Should output false`,
 
         setIsLoading(true);
         try {
-            // Send message to backend AI service
+            // Send message to backend AI service with complete problem context
             const response = await axios.post("/interview/coding-interview", {
                 userId,
                 text: input,
-                problem: currentProblem.title
+                problem: {
+                    title: currentProblem.title,
+                    description: currentProblem.description,
+                    startingCode: currentProblem.startingCode,
+                    currentCode: codeInput,  // Also send current code state
+                    tests: currentProblem.tests
+                }
             });
             // Update chat with both user message and AI response
             setChat([...chat, { sender: "You", text: input }, { sender: "Interviewer", text: response.data }]);
@@ -351,6 +387,97 @@ console.log(isValid("(]")); // Should output false`,
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
+        }
+    };
+
+    /**
+     * Starts voice recording
+     */
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    sampleRate: 48000,
+                    channelCount: 1,
+                    echoCancellation: true,
+                    noiseSuppression: true
+                }
+            });
+            
+            const recorder = new MediaRecorder(stream, {
+                mimeType: 'audio/webm;codecs=opus',
+                audioBitsPerSecond: 48000
+            });
+
+            const chunks = [];
+            recorder.ondataavailable = (e) => {
+                if (e.data.size > 0) {
+                    chunks.push(e.data);
+                }
+            };
+
+            recorder.onstop = async () => {
+                console.log("Recording stopped.");
+                const audioBlob = new Blob(chunks, { type: 'audio/webm;codecs=opus' });
+                const formData = new FormData();
+                formData.append('file', audioBlob);
+
+                setIsLoading(true);
+                try {
+                    // First, transcribe the audio
+                    const transcriptionResponse = await axios.post('/transcribe', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+
+                    // Then, send the transcribed text to the interviewer with complete problem context
+                    const aiResponse = await axios.post("/interview/coding-interview", {
+                        userId,
+                        text: transcriptionResponse.data,
+                        problem: {
+                            title: currentProblem.title,
+                            description: currentProblem.description,
+                            startingCode: currentProblem.startingCode,
+                            currentCode: codeInput,  // Also send current code state
+                            tests: currentProblem.tests
+                        }
+                    });
+
+                    setChat([...chat, 
+                        { sender: "You", text: transcriptionResponse.data },
+                        { sender: "Interviewer", text: aiResponse.data }
+                    ]);
+                } catch (error) {
+                    console.error("Error processing audio:", error);
+                    setChat([...chat, { 
+                        sender: "System", 
+                        text: "Sorry, there was an error processing your recording." 
+                    }]);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            recorder.start();
+            setMediaRecorder(recorder);
+            setIsRecording(true);
+        } catch (error) {
+            console.error("Error accessing microphone:", error);
+            setChat([...chat, { 
+                sender: "System", 
+                text: "Error accessing microphone. Please check your permissions." 
+            }]);
+        }
+    };
+
+    /**
+     * Stops voice recording
+     */
+    const stopRecording = () => {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+            mediaRecorder.stop();
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            setMediaRecorder(null);  // Reset the mediaRecorder state
+            setIsRecording(false);
         }
     };
 
@@ -489,6 +616,13 @@ console.log(isValid("(]")); // Should output false`,
                             disabled={isLoading || !input.trim()}
                         >
                             Send
+                        </button>
+                        <button
+                            className="button"
+                            onClick={isRecording ? stopRecording : startRecording}
+                            disabled={isLoading}
+                        >
+                            {isRecording ? "Stop Recording" : "Start Recording"}
                         </button>
                     </div>
                 </div>

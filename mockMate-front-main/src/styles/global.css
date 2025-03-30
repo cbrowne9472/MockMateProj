@@ -68,18 +68,25 @@ body {
 }
 
 .button {
-  /* padding: 0.75rem 1.5rem; */
+  padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   border: none;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  /* background-color: var(--primary-color); */
+  background-color: var(--primary-color);
   color: white;
 }
 
 .button:hover {
   background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .button.secondary {
@@ -90,6 +97,8 @@ body {
 
 .button.secondary:hover {
   background-color: var(--background-color);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .chat-container {
@@ -432,190 +441,13 @@ body {
   transition: all 0.3s ease;
   margin-left: auto;
   margin-right: auto;
+  color: white;
+  font-size: 2rem;
 }
 
 .interview-option:hover .icon-container {
   transform: scale(1.1);
   box-shadow: 0 15px 30px rgba(79, 70, 229, 0.3);
-}
-
-/* Phone icon - Smartphone design */
-.icon-phone {
-  overflow: visible;
-}
-
-.icon-phone::before {
-  content: "";
-  position: absolute;
-  width: 30px;
-  height: 46px;
-  background-color: white;
-  border-radius: 4px;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.icon-phone::after {
-  content: "";
-  position: absolute;
-  width: 26px;
-  height: 42px;
-  background: rgba(79, 70, 229, 0.9);
-  border-radius: 2px;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-/* Phone screen */
-.icon-phone .screen {
-  position: absolute;
-  width: 22px;
-  height: 28px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 1px;
-  top: 23px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
-  overflow: hidden;
-}
-
-/* Phone home button */
-/* .icon-phone .button {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 50%;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2; 
-} */
-
-/* Phone speaker */
-.icon-phone .speaker {
-  position: absolute;
-  width: 12px;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 2px;
-  top: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
-}
-
-/* Coding icon - Code editor design */
-.icon-coding {
-  overflow: visible;
-}
-
-.icon-coding::before {
-  content: "";
-  position: absolute;
-  width: 46px;
-  height: 36px;
-  background-color: #1e1e3f;
-  border-radius: 6px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-/* Code window header */
-.icon-coding::after {
-  content: "";
-  position: absolute;
-  width: 46px;
-  height: 8px;
-  background: #2d2b55;
-  top: 23px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-radius: 6px 6px 0 0;
-}
-
-/* Code window dots */
-.icon-coding .dots {
-  position: absolute;
-  top: 25px;
-  left: 22px;
-  z-index: 2;
-  display: flex;
-  gap: 3px;
-}
-
-.icon-coding .dots::before,
-.icon-coding .dots::after,
-.icon-coding .dots .dot-middle {
-  content: "";
-  display: block;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.6);
-}
-
-/* Code syntax */
-.icon-coding .syntax {
-  position: absolute;
-  color: #a2aaff;
-  font-family: monospace;
-  font-size: 14px;
-  font-weight: bold;
-  top: 38px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
-  line-height: 1;
-  letter-spacing: -1px;
-}
-
-.icon-coding .brackets {
-  position: absolute;
-  display: flex;
-  font-family: monospace;
-  font-size: 20px;
-  font-weight: bold;
-  top: 36px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #ff9d00;
-  z-index: 2;
-}
-
-/* Icon glow effect */
-/* .interview-option:hover .icon-container::before {
-  content: "";
-  position: absolute;
-  top: -5px;
-  left: -5px;
-  right: -5px;
-  bottom: -5px;
-  background: transparent;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  animation: pulse 2s infinite;
-} */
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  70% {
-    transform: scale(1.05);
-    opacity: 0.2;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
 }
 
 /* Disabled state for icons */

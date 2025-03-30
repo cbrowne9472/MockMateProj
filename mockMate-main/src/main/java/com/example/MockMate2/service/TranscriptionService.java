@@ -114,8 +114,10 @@ public class TranscriptionService {
             RecognitionConfig config = RecognitionConfig.newBuilder()
                     .setEncoding(encoding)
                     .setLanguageCode("en-US")
-                    .setModel("default") // Using the standard model
-                    .setEnableAutomaticPunctuation(true) // Add punctuation
+                    .setSampleRateHertz(48000)  // Explicitly set sample rate
+                    .setAudioChannelCount(1)    // Mono audio
+                    .setEnableAutomaticPunctuation(true)
+                    .setModel("default")
                     .build();
 
             // Create the audio object from the uploaded file bytes
@@ -123,7 +125,7 @@ public class TranscriptionService {
                     .setContent(ByteString.copyFrom(audioFile.getBytes()))
                     .build();
 
-            logger.info("Sending request to Google Cloud Speech-to-Text API");
+            logger.info("Sending request to Google Cloud Speech-to-Text API with sample rate: 48000Hz");
 
             // Perform the transcription request
             RecognizeResponse response = speechClient.recognize(config, audio);

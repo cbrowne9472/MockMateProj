@@ -17,7 +17,41 @@ function PhoneInterview({ userId }) {
     const [isLoading, setIsLoading] = useState(false); // Loading state for API calls
     const [isRecording, setIsRecording] = useState(false); // Recording state
     const [mediaRecorder, setMediaRecorder] = useState(null); // MediaRecorder instance
+    const [questionCount, setQuestionCount] = useState(0);
+    const [isInterviewComplete, setIsInterviewComplete] = useState(false);
     const messagesEndRef = useRef(null);               // Reference for auto-scrolling
+
+    const MAX_QUESTIONS = 5; // Maximum number of questions in the interview
+
+    // Start the interview when component mounts
+    useEffect(() => {
+        const startInterview = async () => {
+            try {
+                setIsLoading(true);
+                const response = await axios.post("/interview/phone-interview", {
+                    userId,
+                    text: "START_INTERVIEW",
+                    questionCount: 0,
+                    isComplete: false
+                });
+                setChat([{ sender: "Interviewer", text: response.data }]);
+                setQuestionCount(0);
+            } catch (error) {
+                console.error("Error starting interview:", error);
+                setChat([{ 
+                    sender: "System", 
+                    text: "Sorry, there was an error starting the interview. Please try resetting the conversation." 
+                }]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        // Only start if chat is empty
+        if (chat.length === 0) {
+            startInterview();
+        }
+    }, []); // Empty dependency array means this runs once on mount
 
     /**
      * Resets the conversation history with the chatbot
@@ -29,11 +63,26 @@ function PhoneInterview({ userId }) {
             await axios.post("/interview/phone-interview/reset", {
                 userId
             });
-            // Clear the local chat history
+            // Clear the local chat history and restart the interview
             setChat([]);
-            setIsLoading(false);
+            setQuestionCount(0);
+            setIsInterviewComplete(false);
+            
+            // Start a new interview after reset
+            const response = await axios.post("/interview/phone-interview", {
+                userId,
+                text: "START_INTERVIEW",
+                questionCount: 0,
+                isComplete: false
+            });
+            setChat([{ sender: "Interviewer", text: response.data }]);
         } catch (error) {
             console.error("Error resetting conversation:", error);
+            setChat([{ 
+                sender: "System", 
+                text: "Sorry, there was an error resetting the interview. Please try again." 
+            }]);
+        } finally {
             setIsLoading(false);
         }
     };
@@ -58,17 +107,47 @@ function PhoneInterview({ userId }) {
 
         setIsLoading(true);
         try {
-            // Send message to backend AI service
             const response = await axios.post("/interview/phone-interview", {
                 userId,
                 text: input,
+                questionCount,
+                isComplete: questionCount >= MAX_QUESTIONS - 1
             });
-            // Update chat with both user message and AI response
-            setChat([...chat, { sender: "You", text: input }, { sender: "Interviewer", text: response.data }]);
+
+            // Update chat with user's message
+            const updatedChat = [...chat, { sender: "You", text: input }];
+            
+            // If this was the last question, request final critique
+            if (questionCount >= MAX_QUESTIONS - 1 && !isInterviewComplete) {
+                updatedChat.push(
+                    { sender: "Interviewer", text: response.data },
+                    { sender: "System", text: "Interview complete. Generating final critique..." }
+                );
+                
+                // Request final critique
+                const critiqueResponse = await axios.post("/interview/phone-interview/critique", {
+                    userId
+                });
+                
+                updatedChat.push({ 
+                    sender: "Interviewer", 
+                    text: "Final Critique:\n" + critiqueResponse.data 
+                });
+                
+                setIsInterviewComplete(true);
+            } else {
+                updatedChat.push({ sender: "Interviewer", text: response.data });
+                setQuestionCount(prev => prev + 1);
+            }
+            
+            setChat(updatedChat);
             setInput("");
         } catch (error) {
             console.error("Error sending message:", error);
-            setChat([...chat, { sender: "You", text: input }, { sender: "System", text: "Sorry, there was an error processing your request." }]);
+            setChat([...chat, 
+                { sender: "You", text: input }, 
+                { sender: "System", text: "Sorry, there was an error processing your request." }
+            ]);
         } finally {
             setIsLoading(false);
         }
@@ -88,77 +167,117 @@ function PhoneInterview({ userId }) {
      * Starts audio recording using the browser's MediaRecorder API
      */
     const startRecording = async () => {
-        // Check browser compatibility
-        if (!navigator.mediaDevices || !window.MediaRecorder) {
-            alert("Your browser does not support audio recording.");
-            return;
-        }
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    sampleRate: 48000,
+                    channelCount: 1,
+                    echoCancellation: true,
+                    noiseSuppression: true
+                }
+            });
+            
+            const recorder = new MediaRecorder(stream, {
+                mimeType: 'audio/webm;codecs=opus',
+                audioBitsPerSecond: 48000
+            });
 
-        console.log("Starting recording...");
-        // Request microphone access
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const recorder = new MediaRecorder(stream);
-        setMediaRecorder(recorder);
+            const chunks = [];
+            recorder.ondataavailable = (e) => {
+                if (e.data.size > 0) {
+                    chunks.push(e.data);
+                }
+            };
 
-        // Collect audio data chunks
-        const audioChunks = [];
-        recorder.ondataavailable = (event) => {
-            audioChunks.push(event.data);
-            console.log("Audio chunk captured: ", event.data.size, "bytes");
-        };
-
-        // When recording stops, process the audio
-        recorder.onstop = async () => {
-            console.log("Recording stopped.");
-            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-            console.log("Audio blob size: ", audioBlob.size, "bytes");
-            const formData = new FormData();
-            formData.append("file", audioBlob, "audio.webm");
-
-            try {
-                // Send audio to backend for transcription
-                const response = await axios.post("/transcribe", formData, {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                });
-                const transcript = response.data;
-                console.log("Transcription received:", transcript);
+            recorder.onstop = async () => {
+                console.log("Recording stopped.");
                 
-                // Add the transcribed text to chat and input
-                setChat(prev => [...prev, { sender: "You", text: transcript }]);
+                // Clean up the media stream first
+                stream.getTracks().forEach(track => track.stop());
                 
-                // Send the transcribed text to the backend
+                const audioBlob = new Blob(chunks, { type: "audio/webm" });
+                console.log("Audio blob size: ", audioBlob.size, "bytes");
+                const formData = new FormData();
+                formData.append("file", audioBlob, "audio.webm");
+
                 try {
                     setIsLoading(true);
+                    // Send audio to backend for transcription
+                    const response = await axios.post("/transcribe", formData, {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                        },
+                    });
+                    const transcript = response.data;
+                    console.log("Transcription received:", transcript);
+                    
+                    // Add the transcribed text to chat
+                    setChat(current => [...current, { sender: "You", text: transcript }]);
+
+                    // Send the transcribed text to the backend for AI response
                     const aiResponse = await axios.post("/interview/phone-interview", {
                         userId,
                         text: transcript,
+                        questionCount,
+                        isComplete: questionCount >= MAX_QUESTIONS - 1
                     });
-                    setChat(prev => [...prev, { sender: "Interviewer", text: aiResponse.data }]);
-                } catch (aiError) {
-                    console.error("Error getting AI response:", aiError);
-                    setChat(prev => [...prev, { sender: "System", text: "Sorry, there was an error processing your request." }]);
+
+                    // Handle the AI response based on interview state
+                    if (questionCount >= MAX_QUESTIONS - 1 && !isInterviewComplete) {
+                        // Add AI response and prepare for critique
+                        setChat(current => [...current, 
+                            { sender: "Interviewer", text: aiResponse.data },
+                            { sender: "System", text: "Interview complete. Generating final critique..." }
+                        ]);
+                        
+                        // Request final critique
+                        const critiqueResponse = await axios.post("/interview/phone-interview/critique", {
+                            userId
+                        });
+                        
+                        setChat(current => [...current, { 
+                            sender: "Interviewer", 
+                            text: "Final Critique:\n" + critiqueResponse.data 
+                        }]);
+                        
+                        setIsInterviewComplete(true);
+                    } else {
+                        // Add AI response and increment question counter
+                        setChat(current => [...current, { 
+                            sender: "Interviewer", 
+                            text: aiResponse.data 
+                        }]);
+                        setQuestionCount(current => current + 1);
+                    }
+                } catch (error) {
+                    console.error("Error processing audio:", error);
+                    setChat(current => [...current, { 
+                        sender: "System", 
+                        text: "Sorry, there was an error processing your recording." 
+                    }]);
                 } finally {
                     setIsLoading(false);
                 }
-            } catch (error) {
-                console.error("Error transcribing audio:", error);
-                setChat([...chat, { sender: "System", text: "Sorry, there was an error processing your audio." }]);
-            }
-        };
+            };
 
-        // Begin recording
-        recorder.start();
-        setIsRecording(true);
+            // Begin recording
+            recorder.start();
+            setMediaRecorder(recorder);  // Store the recorder in state
+            setIsRecording(true);
+        } catch (error) {
+            console.error("Error starting recording:", error);
+            alert("Could not access microphone. Please ensure you have granted permission.");
+        }
     };
 
     /**
      * Stops the current audio recording
      */
     const stopRecording = () => {
-        if (mediaRecorder) {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
             mediaRecorder.stop();
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            setMediaRecorder(null);  // Reset the mediaRecorder state
             setIsRecording(false);
         }
     };
@@ -166,7 +285,12 @@ function PhoneInterview({ userId }) {
     return (
         <div className="chat-container">
             <div className="chat-header">
-                <h2>Phone Interview Practice</h2>
+                <div className="header-content">
+                    <h2>Phone Interview Practice</h2>
+                    <div className="interview-progress">
+                        Question {Math.min(questionCount + 1, MAX_QUESTIONS)} of {MAX_QUESTIONS}
+                    </div>
+                </div>
                 <button
                     className="button secondary"
                     onClick={resetConversation}
@@ -181,7 +305,7 @@ function PhoneInterview({ userId }) {
                 {chat.map((msg, i) => (
                     <div
                         key={i}
-                        className={`message ${msg.sender === "You" ? "user" : "assistant"}`}
+                        className={`message ${msg.sender === "You" ? "user" : msg.sender === "System" ? "system" : "assistant"}`}
                     >
                         <strong>{msg.sender}:</strong> {msg.text}
                     </div>
@@ -201,21 +325,21 @@ function PhoneInterview({ userId }) {
                     className="input"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Type your answer... (Press Enter to send)"
-                    disabled={isLoading}
+                    onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+                    placeholder={isInterviewComplete ? "Interview complete. Reset to start a new one." : "Type your answer... (Press Enter to send)"}
+                    disabled={isLoading || isInterviewComplete}
                 />
                 <button
                     className="button"
                     onClick={sendMessage}
-                    disabled={isLoading || !input.trim()}
+                    disabled={isLoading || !input.trim() || isInterviewComplete}
                 >
                     Send
                 </button>
                 <button
                     className="button"
                     onClick={isRecording ? stopRecording : startRecording}
-                    disabled={isLoading}
+                    disabled={isLoading || isInterviewComplete}
                 >
                     {isRecording ? "Stop Recording" : "Start Recording"}
                 </button>

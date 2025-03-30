@@ -23,10 +23,8 @@ function InterviewSelection({ userId, onSelect }) {
                     className="interview-option"
                     onClick={() => onSelect("phone")}
                 >
-                    <div className="icon-container icon-phone">
-                        <div className="screen"></div>
-                        <div className="button"></div>
-                        <div className="speaker"></div>
+                    <div className="icon-container">
+                        <i className="fas fa-phone"></i>
                     </div>
                     <h3>Phone Interview</h3>
                     <p>
@@ -41,12 +39,8 @@ function InterviewSelection({ userId, onSelect }) {
                     className="interview-option"
                     onClick={() => onSelect("coding")}
                 >
-                    <div className="icon-container icon-coding">
-                        <div className="dots">
-                            <span className="dot-middle"></span>
-                        </div>
-                        <div className="syntax">&lt;/&gt;</div>
-                        <div className="brackets">{"{}"}</div>
+                    <div className="icon-container">
+                        <i className="fas fa-code"></i>
                     </div>
                     <h3>Coding Interview</h3>
                     <p>
