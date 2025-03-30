@@ -1,6 +1,6 @@
 # MockMate
 
-MockMate is a web platform designed to help interviewees practice and improve their technical skills through realistic mock interviews. Built during a hackathon, this project empowers users to simulate coding interviews, receive feedback from peers, and track their progress over time.
+MockMate is a web platform designed to help interviewees practice and improve their technical skills through realistic mock interviews. Built during a hackathon, this project empowers users to simulate coding interviews, receive feedback from peers, and track their progress over time
 
 ## 💡 What is MockMate?
 
