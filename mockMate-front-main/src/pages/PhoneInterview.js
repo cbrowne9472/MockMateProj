@@ -2,15 +2,15 @@ import React, { useState, useRef, useEffect } from "react";
 import axios from "../api/api";
 
 /**
- * CodingInterview Component
+ * PhoneInterview Component
  * 
- * This component provides an interactive coding interview experience with:
+ * This component provides an interactive phone interview experience with:
  * 1. Text-based chat interface for communicating with an AI interviewer
  * 2. Voice recording capability that transcribes speech to text
  * 
  * @param {string} userId - The unique identifier for the current user
  */
-function CodingInterview({ userId }) {
+function PhoneInterview({ userId }) {
     // State management for user interactions
     const [input, setInput] = useState("");            // Text input from the user
     const [chat, setChat] = useState([]);              // Chat history array
@@ -26,7 +26,7 @@ function CodingInterview({ userId }) {
         try {
             setIsLoading(true);
             // Call the backend reset endpoint
-            await axios.post("/interview/coding-interview/reset", {
+            await axios.post("/interview/phone-interview/reset", {
                 userId
             });
             // Clear the local chat history
@@ -59,12 +59,12 @@ function CodingInterview({ userId }) {
         setIsLoading(true);
         try {
             // Send message to backend AI service
-            const response = await axios.post("/interview/coding-interview", {
+            const response = await axios.post("/interview/phone-interview", {
                 userId,
                 text: input,
             });
             // Update chat with both user message and AI response
-            setChat([...chat, { sender: "You", text: input }, { sender: "Gemini", text: response.data }]);
+            setChat([...chat, { sender: "You", text: input }, { sender: "Interviewer", text: response.data }]);
             setInput("");
         } catch (error) {
             console.error("Error sending message:", error);
@@ -131,11 +131,11 @@ function CodingInterview({ userId }) {
                 // Send the transcribed text to the backend
                 try {
                     setIsLoading(true);
-                    const aiResponse = await axios.post("/interview/coding-interview", {
+                    const aiResponse = await axios.post("/interview/phone-interview", {
                         userId,
                         text: transcript,
                     });
-                    setChat(prev => [...prev, { sender: "Gemini", text: aiResponse.data }]);
+                    setChat(prev => [...prev, { sender: "Interviewer", text: aiResponse.data }]);
                 } catch (aiError) {
                     console.error("Error getting AI response:", aiError);
                     setChat(prev => [...prev, { sender: "System", text: "Sorry, there was an error processing your request." }]);
@@ -166,7 +166,7 @@ function CodingInterview({ userId }) {
     return (
         <div className="chat-container">
             <div className="chat-header">
-                <h2>Coding Interview Practice</h2>
+                <h2>Phone Interview Practice</h2>
                 <button
                     className="button secondary"
                     onClick={resetConversation}
@@ -224,4 +224,4 @@ function CodingInterview({ userId }) {
     );
 }
 
-export default CodingInterview;
+export default PhoneInterview; 
