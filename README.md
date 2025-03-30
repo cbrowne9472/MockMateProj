@@ -31,8 +31,6 @@ MockMate is an all-in-one tool for technical interview preparation. Whether you'
 Follow these steps to run MockMate locally:
 
 ### 1. Clone the Repository
-
-```bash
 git clone https://github.com/yourusername/mockmate.git
 cd mockmate
 
