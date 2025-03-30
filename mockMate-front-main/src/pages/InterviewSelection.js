@@ -23,28 +23,38 @@ function InterviewSelection({ userId, onSelect }) {
                     className="interview-option"
                     onClick={() => onSelect("phone")}
                 >
-                    <div className="option-icon">📱</div>
+                    <div className="icon-container icon-phone">
+                        <div className="screen"></div>
+                        <div className="button"></div>
+                        <div className="speaker"></div>
+                    </div>
                     <h3>Phone Interview</h3>
                     <p>
                         Practice a realistic phone screening interview with general questions, 
                         behavioral scenarios, and receive real-time feedback. Perfect for 
                         improving your communication skills.
                     </p>
-                    <button className="button">Start Phone Interview</button>
+                    <button className="button">Start Now</button>
                 </div>
                 
                 <div 
-                    className="interview-option disabled"
+                    className="interview-option"
                     onClick={() => onSelect("coding")}
                 >
-                    <div className="option-icon">💻</div>
+                    <div className="icon-container icon-coding">
+                        <div className="dots">
+                            <span className="dot-middle"></span>
+                        </div>
+                        <div className="syntax">&lt;/&gt;</div>
+                        <div className="brackets">{"{}"}</div>
+                    </div>
                     <h3>Coding Interview</h3>
                     <p>
                         Practice technical coding interviews with algorithm challenges, 
                         problem-solving questions, and code reviews. Sharpen your technical 
                         skills for software engineering roles.
                     </p>
-                    <button className="button">Coming Soon</button>
+                    <button className="button">Start Now</button>
                 </div>
             </div>
         </div>
